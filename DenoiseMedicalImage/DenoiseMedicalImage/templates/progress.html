@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Denoising Progress</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        const inputFile = "{{ input_file }}";
+        const outputFile = "{{ output_file }}";
+
+        function updateProgress() {
+            fetch('/progress_status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('progress-bar').style.width = data.progress + '%';
+                    document.getElementById('progress-text').innerText = data.progress + '%';
+
+                    if (!data.complete) {
+                        setTimeout(updateProgress, 500);
+                    } else {
+                        document.getElementById('progress-container').style.display = 'none';
+                        document.getElementById('progress-text').style.display = 'none';
+                        const imagesDiv = document.getElementById('images');
+                        imagesDiv.innerHTML = `
+                            <div>
+                                <h3>Input Image</h3>
+                                <img src="/static/uploads/${inputFile}" alt="Input">
+                            </div>
+                            <div>
+                                <h3>Denoised Image</h3>
+                                <img src="/static/outputs/${outputFile}" alt="Output">
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        window.onload = updateProgress;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Denoising in Progress...</h1>
+        <div class="progress-container" id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="progress-text">0%</p>
+
+        <div class="images" id="images"></div>
+    </div>
+</body>
+</html>
